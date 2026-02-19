@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Sweet Khala</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Load Babel for JSX support -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .bg-stripe-pattern {
+            background-image: linear-gradient(45deg, #fdf2f8 25%, transparent 25%, transparent 50%, #fdf2f8 50%, #fdf2f8 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
+        }
+
+        @keyframes floatDown {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            60% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animate-popIn {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        
+        .animate-wiggle {
+            animation: wiggle 0.5s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICON COMPONENTS (Inline SVGs to avoid dependencies) ---
+        const Heart = ({ className, style }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+        );
+
+        const X = ({ size, className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+            </svg>
+        );
+
+        const Star = ({ className, style }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+        );
+
+        // --- MAIN APP COMPONENT ---
+        const App = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const [particles, setParticles] = useState([]);
+            const [forgiven, setForgiven] = useState(false);
+            const [isHoveringForgive, setIsHoveringForgive] = useState(false);
+
+            // Generate floating cute particles (hearts, stars, flowers)
+            useEffect(() => {
+                const createParticle = () => {
+                    const types = ['🌸', '💖', '✨', '☁️', '🍬'];
+                    return {
+                        id: Math.random(),
+                        type: types[Math.floor(Math.random() * types.length)],
+                        left: Math.random() * 100,
+                        animationDuration: 6 + Math.random() * 10,
+                        delay: Math.random() * 5,
+                        scale: 0.5 + Math.random() * 1,
+                    };
+                };
+
+                const initialParticles = Array.from({ length: 30 }, createParticle);
+                setParticles(initialParticles);
+
+                const interval = setInterval(() => {
+                    setParticles(prev => [...prev.slice(-29), createParticle()]);
+                }, 1500);
+
+                return () => clearInterval(interval);
+            }, []);
+
+            const handleOpen = () => {
+                setIsOpen(true);
+            };
+
+            // This function sends the email silently in the background
+            const sendSilentNotification = async () => {
+                try {
+                    // ⚠️ IMPORTANT: Replace 'YOUR_FORM_ID_HERE' below with your actual Formspree ID
+                    const formEndpoint = "https://formspree.io/f/xbdakver"; 
+
+                    await fetch(formEndpoint, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: "She forgave you! The button was clicked.",
+                            date: new Date().toLocaleString(),
+                            recipient: "Khala"
+                        })
+                    });
+                    console.log("Silent notification sent successfully");
+                } catch (error) {
+                    console.error("Silent notification failed (Did you add your Form ID?):", error);
+                }
+            };
+
+            const handleForgive = () => {
+                // 1. Immediately update the UI so she sees the celebration
+                setForgiven(true);
+                
+                // 2. Send the notification in the background without her knowing
+                sendSilentNotification();
+            };
+
+            // A cute CSS-only Bear Mascot Component
+            const CuteBear = ({ isHappy, isBegging }) => (
+                <div className={`relative w-32 h-32 mx-auto transition-transform duration-500 ${isHappy ? 'animate-bounce' : isBegging ? 'animate-wiggle' : ''}`}>
+                    {/* Ears */}
+                    <div className="absolute top-0 left-2 w-10 h-10 bg-amber-200 rounded-full border-4 border-amber-800"></div>
+                    <div className="absolute top-0 right-2 w-10 h-10 bg-amber-200 rounded-full border-4 border-amber-800"></div>
+                    
+                    {/* Head */}
+                    <div className="absolute top-4 left-0 w-32 h-28 bg-amber-100 rounded-[2.5rem] border-4 border-amber-800 flex flex-col items-center justify-center shadow-lg z-10">
+                        
+                        {/* Eyes */}
+                        <div className="flex gap-4 mt-2">
+                        {isHappy ? (
+                            // Happy Eyes (Arches)
+                            <React.Fragment>
+                                <div className="w-3 h-3 border-t-4 border-amber-900 rounded-full w-6"></div>
+                                <div className="w-3 h-3 border-t-4 border-amber-900 rounded-full w-6"></div>
+                            </React.Fragment>
+                        ) : (
+                            // Sad/Puppy Eyes
+                            <React.Fragment>
+                                <div className="relative w-8 h-8 bg-amber-900 rounded-full overflow-hidden">
+                                    <div className="absolute top-1 left-1 w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                                </div>
+                                <div className="relative w-8 h-8 bg-amber-900 rounded-full overflow-hidden">
+                                    <div className="absolute top-1 left-1 w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                                </div>
+                            </React.Fragment>
+                        )}
+                        </div>
+
+                        {/* Blush */}
+                        <div className="absolute top-14 w-full flex justify-between px-4 opacity-60">
+                            <div className="w-4 h-2 bg-pink-400 rounded-full"></div>
+                            <div className="w-4 h-2 bg-pink-400 rounded-full"></div>
+                        </div>
+
+                        {/* Snout */}
+                        <div className="mt-2 w-10 h-8 bg-white rounded-full flex flex-col items-center justify-center">
+                            <div className="w-3 h-2 bg-amber-900 rounded-full mb-1"></div>
+                            {isHappy ? (
+                                <div className="w-4 h-2 border-b-2 border-amber-900 rounded-full"></div>
+                            ) : (
+                                <div className="w-2 h-1 bg-amber-900 rounded-full"></div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Paws if Begging */}
+                    {!isHappy && (
+                        <div className={`absolute bottom-[-10px] w-full flex justify-center gap-1 transition-all duration-300 ${isBegging ? '-translate-y-4' : ''}`}>
+                            <div className="w-8 h-8 bg-amber-100 border-4 border-amber-800 rounded-full z-20"></div>
+                            <div className="w-8 h-8 bg-amber-100 border-4 border-amber-800 rounded-full z-20"></div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-pink-50 overflow-hidden font-sans relative selection:bg-pink-200">
+                    
+                    {/* Animated Background Gradient Blobs */}
+                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+                    <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+
+                    {/* Floating Particles */}
+                    {particles.map((p) => (
+                        <div
+                        key={p.id}
+                        className="absolute top-[-50px] pointer-events-none z-0 select-none"
+                        style={{
+                            left: `${p.left}%`,
+                            fontSize: `${p.scale}rem`,
+                            animation: `floatDown ${p.animationDuration}s linear infinite`,
+                            animationDelay: `${p.delay}s`,
+                        }}
+                        >
+                        {p.type}
+                        </div>
+                    ))}
+
+                    {/* Main Content */}
+                    <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6">
+                        
+                        {/* Header Title - Responsive sizes */}
+                        <div className={`transition-all duration-700 ${isOpen ? 'scale-75 -translate-y-12 opacity-80' : 'scale-100'} w-full max-w-lg mx-auto`}>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 mb-2 drop-shadow-sm text-center font-comic leading-tight py-2">
+                            For My Sweet Khala
+                        </h1>
+                        </div>
+
+                        {/* The Card Container - Responsive widths */}
+                        <div className="relative w-full max-w-[320px] sm:max-w-sm perspective-1000">
+                        
+                        {!isOpen ? (
+                            <button 
+                            onClick={handleOpen}
+                            className="group relative w-full aspect-[4/5] bg-white rounded-[2rem] sm:rounded-[3rem] shadow-[0_20px_50px_rgba(236,72,153,0.3)] cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-rotate-2 flex flex-col items-center justify-center border-4 sm:border-8 border-white overflow-hidden ring-4 ring-pink-100"
+                            >
+                            <div className="absolute inset-0 bg-stripe-pattern opacity-10"></div>
+                            
+                            <div className="z-10 bg-pink-50 p-6 rounded-full mb-6 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                                <Heart className="w-16 h-16 sm:w-20 sm:h-20 text-pink-400 fill-pink-400 animate-pulse" />
+                            </div>
+                            
+                            <span className="text-xl sm:text-2xl font-bold text-pink-500 bg-white px-6 py-2 rounded-full shadow-sm group-hover:bg-pink-500 group-hover:text-white transition-colors">
+                                Open Me! 💌
+                            </span>
+                            </button>
+                        ) : (
+                            /* Opened Card - Responsive padding and sizing */
+                            <div className="relative animate-popIn">
+                            <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-5 sm:p-8 md:p-10 border-4 border-white relative overflow-visible mt-8 sm:mt-0">
+                                
+                                {/* Close X */}
+                                <button 
+                                onClick={() => setIsOpen(false)}
+                                className="absolute -top-4 -right-2 sm:-top-3 sm:-right-3 bg-pink-100 text-pink-500 p-2 rounded-full hover:bg-pink-200 transition-colors shadow-sm z-50 focus:outline-none"
+                                >
+                                <X size={20} />
+                                </button>
+
+                                <div className="text-center space-y-3 sm:space-y-4">
+                                
+                                {/* The Dynamic Mascot - Scaled for mobile */}
+                                <div className="mb-4 sm:mb-6 -mt-16 sm:-mt-20 transform scale-90 sm:scale-100 origin-bottom">
+                                    <CuteBear isHappy={forgiven} isBegging={isHoveringForgive} />
+                                </div>
+
+                                {!forgiven ? (
+                                    <div className="space-y-3 sm:space-y-4 animate-fadeIn">
+                                    <h2 className="text-xl sm:text-2xl font-black text-gray-700">
+                                        I'm So Sorry... 🥺
+                                    </h2>
+
+                                    <p className="text-gray-500 text-sm sm:text-base font-medium leading-relaxed px-1 sm:px-2">
+                                        My Dearest Khala, I am sorry. You are the <span className="text-pink-500 font-bold">most beautiful</span> and best khala in the world.
+                                    </p>
+                                    
+                                    <div className="bg-pink-50 p-2 sm:p-3 rounded-2xl text-pink-600 text-xs sm:text-sm font-bold border border-pink-100 rotate-1 mx-2">
+                                        "Please don't be angry anymore!"
+                                    </div>
+
+                                    <div className="pt-2 sm:pt-4">
+                                        <button 
+                                        onClick={handleForgive}
+                                        onMouseEnter={() => setIsHoveringForgive(true)}
+                                        onMouseLeave={() => setIsHoveringForgive(false)}
+                                        className="w-full py-3 sm:py-4 bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white rounded-xl sm:rounded-2xl font-black text-lg sm:text-xl shadow-xl transform transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group focus:outline-none"
+                                        >
+                                        <Heart className="w-5 h-5 sm:w-6 sm:h-6 fill-white group-hover:animate-bounce" />
+                                        I Forgive You!
+                                        </button>
+                                    </div>
+                                    </div>
+                                ) : (
+                                    /* Celebration Content */
+                                    <div className="animate-popIn space-y-3 sm:space-y-4 pb-2">
+                                    <h2 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
+                                        YAYYY!!! 🎉
+                                    </h2>
+                                    
+                                    <p className="text-gray-600 text-sm sm:text-base font-medium px-2">
+                                        You have the biggest heart in the world! <br/> I love you so much Khala!
+                                    </p>
+
+                                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-3 sm:p-4 rounded-3xl border-2 border-yellow-100 mt-2 sm:mt-4 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-300 to-transparent"></div>
+                                        
+                                        <div className="flex justify-center gap-1 mb-2">
+                                        {[1,2,3,4,5].map(i => (
+                                            <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 fill-yellow-400 animate-spin-slow" style={{animationDelay: `${i * 100}ms`}} />
+                                        ))}
+                                        </div>
+                                        <p className="font-bold text-yellow-600 text-base sm:text-lg uppercase tracking-wider">
+                                        #1 Khala Award
+                                        </p>
+                                    </div>
+                                    </div>
+                                )}
+                                </div>
+                            </div>
+                            </div>
+                        )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
